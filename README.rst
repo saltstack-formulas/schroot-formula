@@ -1,6 +1,6 @@
-===========
-debootstrap
-===========
+=======
+schroot
+=======
 
 This formula makes it easy to configure schroot. It relies on
 debootstrap-formula to setup the underlying chroot and registers
