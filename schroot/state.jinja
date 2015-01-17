@@ -1,4 +1,4 @@
-{% from 'debootstrap/state.jinja' import debootstrap_state %}
+{% from 'debootstrap/state.jinja' import debootstrap_state, debootstrap_prepare_data %}
 {% from 'debootstrap/vendor_data.jinja' import vendor_data %}
 
 {%- macro schroot_basedir(root_key='schroot') -%}
@@ -6,12 +6,12 @@
      salt['pillar.get']('debootstrap:basedir', '/srv/chroots')) }}
 {%- endmacro -%}
 
-{% macro schroot_state(name, data, conf={}, sls_require='schroot.prereq') %}
-{{ debootstrap_state('schroot_' + name, data, apt_update=False, sls_require=sls_require) }}
+{% macro schroot_state(data, conf={}, sls_require='schroot.prereq') %}
+{{ debootstrap_state(data, apt_update=False, sls_require=sls_require) }}
 
-schroot_{{ name }}_config_file:
+schroot_{{ data.id }}_config_file:
   file.managed:
-    - name: /etc/schroot/chroot.d/{{ name }}
+    - name: /etc/schroot/chroot.d/{{ data.id }}
     - source: salt://schroot/schroot.conf
     - template: jinja
     - user: root
@@ -20,21 +20,21 @@ schroot_{{ name }}_config_file:
     - context:
         data: {{ data }}
         schroot_conf: {{ conf }}
-        schroot_name: {{ name }}
+        schroot_name: {{ data.id }}
     - require:
-      - cmd: schroot_{{ name }}
+      - cmd: debootstrap_{{ data.id }}
 
-schroot_{{ name }}_apt_update:
+schroot_{{ data.id }}_apt_update:
   cmd.wait:
-    - name: schroot -c {{ name }} -p -- sh -c "apt-get update && apt-get -o Dpkg::Options::=--force-confnew -o Dpkg::Options::=--force-confdef -y dist-upgrade"
+    - name: schroot -c {{ data.id }} -p -- sh -c "apt-get update && apt-get -o Dpkg::Options::=--force-confnew -o Dpkg::Options::=--force-confdef -y dist-upgrade"
     - env:
       - DEBIAN_FRONTEND: noninteractive
     - user: root
     - group: root
     - require:
-      - file: schroot_{{ name }}_config_file
+      - file: schroot_{{ data.id }}_config_file
     - watch:
-      - file: schroot_{{ name }}_sources_list
+      - file: debootstrap_{{ data.id }}_sources_list
 {% endmacro %}
 
 {%- macro generate_schroot_name(name, arch, data) -%}
@@ -45,7 +45,7 @@ schroot_{{ name }}_apt_update:
 {%- set aliases = [] -%}
 {%- if data.get('dist_aliases', False) -%}
 {%- for alias in vendor_data[data['vendor']]['dists'][data['dist']].get('aliases', []) -%}
-{%- set schroot_name = generate_schroot_name(alias, arch, data) -%}
+{%- set schroot_name = '{}'.format(generate_schroot_name(alias, arch, data)) -%}
 {%- do aliases.append(schroot_name) -%}
 {%- if data.get('short_alias', False) and arch == grains['osarch'] -%}
 {%- do aliases.append(alias) -%}
@@ -78,19 +78,23 @@ schroot_{{ name }}_apt_update:
   {% set architectures = pillar_data.get('architectures',
       [pillar_data.get('arch', grains['osarch'])]) %}
   {% for arch in architectures %}
+    {# Generate the data #}
     {% set schroot_data = default_data.copy() %}
     {% do schroot_data.update(pillar_data) %}
     {% do schroot_data.update(arch=arch) %}
-    {% set schroot_aliases = generate_aliases(name, arch, schroot_data) %}
+    {% do schroot_data.setdefault('dist', name) %}
+    {% do schroot_data.setdefault('basedir', '{}'.format(schroot_basedir(root_key))) %}
+    {% set schroot_name = '{}'.format(generate_schroot_name(name, arch, schroot_data)) %}
+    {% do schroot_data.update(id=schroot_name) %}
+    {% do debootstrap_prepare_data(schroot_data) %}
+    {# Generate the schroot configuration #}
+    {% set schroot_aliases = '{}'.format(generate_aliases(name, arch, schroot_data)) %}
     {% set schroot_conf = default_conf.copy() %}
     {% do schroot_conf.update(pillar_data.get('schroot.conf', {})) %}
     {% if schroot_aliases %}
-    {% do schroot_conf.update(aliases='{}'.format(schroot_aliases)) %}
+    {% do schroot_conf.update(aliases=schroot_aliases) %}
     {% endif %}
-    {% set schroot_name = generate_schroot_name(name, arch, schroot_data) %}
-    {% do schroot_data.setdefault('directory',
-	    '{}/{}'.format(schroot_basedir(root_key), schroot_name)) %}
-{{ schroot_state(schroot_name, schroot_data, schroot_conf, sls_require=sls_require) }}
+{{ schroot_state(schroot_data, schroot_conf, sls_require=sls_require) }}
   {% endfor %}
 {% endfor %}
 {% endmacro %}

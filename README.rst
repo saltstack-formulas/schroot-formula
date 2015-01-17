@@ -28,9 +28,6 @@ with the following changes:
 - The chroot name (as registered in schroot) is generated with the
   ``<identifier>-<architecture>`` template (where identifier is the
   name of the top-level key).
-- The ``directory`` parameter can be omitted. When missing, the chroot
-  is placed in ``/srv/chroots/<name>`` (the base directory can be
-  overriden in pillar data ``schroot:basedir``).
 - You can use the ``architectures`` parameter (as a list) to create
   the same chroot for multiple architectures (assuming they are compatible
   with your CPU and kernel).
@@ -51,21 +48,22 @@ with the following changes:
 
 Here's a quick sample::
 
-    schroot:
+    debootstrap:
       basedir: /srv/chroots
+    schroot:
+      schroot.conf:
+        groups: root,rhertzog
       chroots:
         sid:                          # a chroot identifier
-          # Required parameters
           vendor: debian              # the name of the vendor
           dist: sid                   # codename of the release to bootstrap
-          # Optional parameters (schroot)
           architectures:
             - amd64
             - i386
           schroot.conf:
             profile: desktop
           test_alias: True
-          short_alias: True           # Generate "unstable" a
+          short_alias: True           # Generate "" alias
           dist_aliases: False
           # You can also put parameters used by debootstrap-formula
           extra_dists:                # supplementary APT repositories to 
