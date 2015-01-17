@@ -1,6 +1,11 @@
 {% from 'debootstrap/state.jinja' import debootstrap_state %}
 {% from 'debootstrap/vendor_data.jinja' import vendor_data %}
 
+{%- macro schroot_basedir(root_key='schroot') -%}
+{{ salt['pillar.get'](root_key + ':basedir',
+     salt['pillar.get']('debootstrap:basedir', '/srv/chroots')) }}
+{%- endmacro -%}
+
 {% macro schroot_state(name, data, conf={}, sls_require='schroot.prereq') %}
 {{ debootstrap_state('schroot_' + name, data, apt_update=False, sls_require=sls_require) }}
 
@@ -69,7 +74,6 @@ schroot_{{ name }}_apt_update:
 
 {% macro schroot_state_loop(root_key='schroot', default_data=default_data,
                             default_conf=default_conf, sls_require='schroot.prereq') %}
-{% set schroot_basedir = salt['pillar.get'](root_key + ':basedir', '/srv/chroots') %}
 {% for name, pillar_data in salt['pillar.get'](root_key + ':chroots', {}).items() %}
   {% set architectures = pillar_data.get('architectures',
       [pillar_data.get('arch', grains['osarch'])]) %}
@@ -84,7 +88,8 @@ schroot_{{ name }}_apt_update:
     {% do schroot_conf.update(aliases='{}'.format(schroot_aliases)) %}
     {% endif %}
     {% set schroot_name = generate_schroot_name(name, arch, schroot_data) %}
-    {% do schroot_data.setdefault('directory', '{}/{}'.format(schroot_basedir, schroot_name)) %}
+    {% do schroot_data.setdefault('directory',
+	    '{}/{}'.format(schroot_basedir(root_key), schroot_name)) %}
 {{ schroot_state(schroot_name, schroot_data, schroot_conf, sls_require=sls_require) }}
   {% endfor %}
 {% endfor %}

@@ -2,12 +2,13 @@ debootstrap:
   # Since the formula builds on top debootstrap-formula, you might
   # want to customize some of its pillar data too... see documentation
   # of debootstrap-formula
+  basedir: /srv/chroots
   vendor:
     repositories:
       default: http://ftp.fr.debian.org/debian
 
 schroot:
-  basedir: /srv/chroots
+  basedir: /srv/chroots  # Defaults to debootstrap:basedir or /srv/chroots
   schroot.conf:  # Default config for all schroots (will be updated with
                  # per-chroot setting)
     profile: default

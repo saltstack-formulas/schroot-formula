@@ -1,14 +1,17 @@
-# Ensure we have debootstrap/cdebootsrap
+{% from 'schroot/state.jinja' import schroot_basedir %}
+
+# Ensure we have debootstrap/cdebootstrap
 include:
-  - debootstrap.pkg
+  - debootstrap.prereq
 
 # And schroot
 schroot:
   pkg.installed
 
 # And the basedir hosting all chroots
-{{ salt['pillar.get']('schroot:basedir', '/srv/chroots') }}:
+schroot_basedir:
   file.directory:
+    - name: {{ schroot_basedir() }}
     - user: root
     - group: root
     - mode: 755
