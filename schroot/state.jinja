@@ -90,6 +90,7 @@ schroot_{{ data.id }}_apt_update:
     {# Generate the schroot configuration #}
     {% set schroot_aliases = '{}'.format(generate_aliases(name, arch, schroot_data)) %}
     {% set schroot_conf = default_conf.copy() %}
+    {% do schroot_conf.update(salt['pillar.get'](root_key + ':schroot.conf', {})) %}
     {% do schroot_conf.update(pillar_data.get('schroot.conf', {})) %}
     {% if schroot_aliases %}
     {% do schroot_conf.update(aliases=schroot_aliases) %}
