@@ -33,6 +33,8 @@ schroot:
       schroot_name_format: '{name}-{arch}' # Official name is basename + architecture
       dist_aliases: True  # Generate aliases based on alternate names of the repository
       short_alias: True   # Generate a short alias without the architecture too
+      extra_aliases:      # Supplementary aliases to register
+        - experimental
       # Optional parameters from debootstrap-formula 
       arch: amd64
       components:

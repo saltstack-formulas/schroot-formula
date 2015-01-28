@@ -45,6 +45,9 @@ with the following changes:
   on alternate names of the distribution (e.g. you get "unstable-amd64"
   and "unstable" for a Debian chroot based on "sid". This is interesting
   for sbuild users for example).
+- You can add supplementary aliases in ``extra_aliases``. This is useful
+  to give supplementary names to the chroot, possibly based on the name
+  of extra repositories that you enabled in the chroot.
 
 Here's a quick sample::
 
@@ -65,6 +68,8 @@ Here's a quick sample::
           test_alias: True
           short_alias: True           # Generate "" alias
           dist_aliases: False
+          extra_aliases:
+            - experimental
           # You can also put parameters used by debootstrap-formula
           extra_dists:                # supplementary APT repositories to 
             - experimental            # enable

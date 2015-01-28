@@ -55,6 +55,10 @@ schroot_{{ data.id }}_apt_update:
 {%- if data.get('short_alias', False) and arch == grains['osarch'] -%}
 {%- do aliases.append(name) -%}
 {%- endif -%}
+{%- for alias in data.get('extra_aliases', []) -%}
+{%- set schroot_name = '{}'.format(generate_schroot_name(alias, arch, data)) -%}
+{%- do aliases.append(schroot_name) -%}
+{%- endfor -%}
 {%- for alias in aliases -%}
 {{ alias }}{% if not loop.last %},{% endif %}
 {%- endfor -%}
