@@ -44,7 +44,7 @@ schroot_{{ data.id }}_apt_update:
 {%- macro generate_aliases(name, arch, data) -%}
 {%- set aliases = [] -%}
 {%- if data.get('dist_aliases', False) -%}
-{%- for alias in vendor_data[data['vendor']]['dists'][data['dist']].get('aliases', []) -%}
+{%- for alias in vendor_data.get(data['vendor'], {}).get('dists', {}).get(data['dist'], {}).get('aliases', []) -%}
 {%- set schroot_name = '{}'.format(generate_schroot_name(alias, arch, data)) -%}
 {%- do aliases.append(schroot_name) -%}
 {%- if data.get('short_alias', False) and arch == grains['osarch'] -%}
