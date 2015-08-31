@@ -5,8 +5,11 @@ include:
   - debootstrap.prereq
 
 # And schroot
-schroot:
-  pkg.installed
+schroot_required_packages:
+  pkg.installed:
+    - names:
+      - schroot
+      - kmod
 
 # And the basedir hosting all chroots
 schroot_basedir:

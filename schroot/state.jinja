@@ -1,6 +1,13 @@
 {% from 'debootstrap/state.jinja' import debootstrap_state, debootstrap_prepare_data %}
 {% from 'debootstrap/vendor_data.jinja' import vendor_data %}
 
+{# Detect the available overlay filesystem, fallback to overlay and not
+   none as that would disable the feature where we want to actualy
+   enable it #}
+{%- macro schroot_guess_overlay_fs() -%}
+{{ salt['cmd.shell']('(modinfo overlay >/dev/null 2>&1 && echo overlay) || (modinfo aufs >/dev/null 2>&1 && echo aufs) || (modinfo unionfs >/dev/null 2>&1 && echo unionfs) || echo overlay')|string }}
+{%- endmacro -%}
+
 {%- macro schroot_basedir(root_key='schroot') -%}
 {{ salt['pillar.get'](root_key + ':basedir',
      salt['pillar.get']('debootstrap:basedir', '/srv/chroots')) }}
@@ -21,6 +28,7 @@ schroot_{{ data.id }}_config_file:
         data: {{ data }}
         schroot_conf: {{ conf }}
         schroot_name: {{ data.id }}
+        schroot_overlay_fs: {{ schroot_guess_overlay_fs() }}
     - require:
       - cmd: debootstrap_{{ data.id }}
 
