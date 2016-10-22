@@ -13,6 +13,9 @@ schroot:
                  # per-chroot setting)
     profile: default
     groups: root,rhertzog
+  # Values used in /etc/default/schroot
+  stop_action: none
+  start_action: recover
   # List of chroots to setup with debootstrap and to manage with schroot
   chroots:
     unstable:  # Basename of the chroot for schroot
