@@ -71,20 +71,20 @@ schroot_{{ data.id }}_apt_update:
 {%- endfor -%}
 {%- endmacro -%}
 
-{% set default_data = {
+{% set schroot_default_data = {
     'schroot_name_format': '{name}-{arch}',
     'dist_aliases': False,
     'short_alias': True,
     'cdebootstrap_options': '--flavour=standard',
 } %}
-{% set default_conf = {
+{% set schroot_default_conf = {
     'profile': 'default',
     'groups': 'root',
     'root-groups': 'root',
 } %}
 
-{% macro schroot_state_loop(root_key='schroot', default_data=default_data,
-                            default_conf=default_conf, sls_require='schroot.prereq') %}
+{% macro schroot_state_loop(root_key='schroot', default_data=schroot_default_data,
+                            default_conf=schroot_default_conf, sls_require='schroot.prereq') %}
 {% for name, pillar_data in salt['pillar.get'](root_key + ':chroots', {}).items() %}
   {% set architectures = pillar_data.get('architectures',
       [pillar_data.get('arch', grains['osarch'])]) %}
