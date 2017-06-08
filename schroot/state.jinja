@@ -37,8 +37,7 @@ schroot_{{ data.id }}_apt_update:
     - name: schroot -c {{ data.id }} -p -- sh -c "apt-get update && apt-get -o Dpkg::Options::=--force-confnew -o Dpkg::Options::=--force-confdef -y dist-upgrade"
     - env:
       - DEBIAN_FRONTEND: noninteractive
-    - user: root
-    - group: root
+    - runas: root
     - require:
       - file: schroot_{{ data.id }}_config_file
     - watch:
