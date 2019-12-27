@@ -25,7 +25,7 @@ schroot_{{ data.id }}_config_file:
     - group: root
     - mode: 644
     - context:
-        data: {{ data }}
+        data: {{ data|json }}
         schroot_conf: {{ conf }}
         schroot_name: {{ data.id }}
         schroot_overlay_fs: {{ schroot_guess_overlay_fs() }}
